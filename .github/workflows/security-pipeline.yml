@@ -52,6 +52,31 @@ jobs:
           mkdir -p reports
           trivy image -f json -o reports/report.json secure-node-app
 
+      # Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Install Python Dependencies
+      - name: Install Python Dependencies
+        run: |
+          pip install requests boto3
+
+      # Run AI Recommendation Engine
+      - name: Run AI Analysis
+        run: |
+          cd scripts
+          python ai_recommendation.py
+
+      # Send Slack Alert
+      - name: Send Slack Alert
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          cd scripts
+          python slack_alert.py
+
       # Upload Artifact
       - name: Upload Report Artifact
         uses: actions/upload-artifact@v4
