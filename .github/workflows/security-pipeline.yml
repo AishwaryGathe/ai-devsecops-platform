@@ -1,0 +1,53 @@
+name: AI DevSecOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  security-scan:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Checkout code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      # Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -f docker/Dockerfile -t secure-node-app .
+
+      # Install Trivy
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+      # Run Trivy Scan
+      - name: Run Trivy Scan
+        run: |
+          trivy image --scanners vuln --severity HIGH,CRITICAL secure-node-app
+
+      # Save Scan Report
+      - name: Export Trivy Report
+        run: |
+          mkdir -p reports
+          trivy image -f json -o reports/report.json secure-node-app
+
+      # Upload Report Artifact
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: reports/report.json
