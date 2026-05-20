@@ -21,24 +21,25 @@ async def slack_actions(request: Request):
 
     if action == "approve_fix":
 
-        print("\nRunning Remediation...\n")
+        print("\nRunning remediation...\n")
 
         subprocess.run(["python", "../scripts/remediation.py"])
 
-        print("\nPushing Changes to GitHub...\n")
+        print("\nPushing changes...\n")
 
         subprocess.run(["git", "add", ".."])
+
         subprocess.run([
             "git",
             "commit",
             "-m",
-            "AI remediation applied"
+            "AI remediation approved"
         ])
 
         subprocess.run(["git", "push"])
 
         return {
-            "text": "✅ AI remediation approved and executed."
+            "text": "✅ Remediation approved and pipeline triggered."
         }
 
     return {
