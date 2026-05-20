@@ -10,13 +10,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
 
-      # Checkout code
+      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup Docker
+      # Setup Docker Buildx
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
@@ -28,9 +31,13 @@ jobs:
       # Install Trivy
       - name: Install Trivy
         run: |
+          sudo apt-get update
           sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+
           sudo apt-get update
           sudo apt-get install trivy -y
 
@@ -39,14 +46,14 @@ jobs:
         run: |
           trivy image --scanners vuln --severity HIGH,CRITICAL secure-node-app
 
-      # Save Scan Report
+      # Export JSON Report
       - name: Export Trivy Report
         run: |
           mkdir -p reports
           trivy image -f json -o reports/report.json secure-node-app
 
-      # Upload Report Artifact
-      - name: Upload Report
+      # Upload Artifact
+      - name: Upload Report Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
