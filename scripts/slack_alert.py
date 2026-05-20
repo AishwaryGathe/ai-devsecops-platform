@@ -1,63 +1,25 @@
-import requests
-import json
 import os
-from dotenv import load_dotenv
+import json
+import requests
 
-load_dotenv()
 WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
 message = {
-    "text": "Vulnerability Alert",
+    "text": "🚨 AI DevSecOps Alert",
     "blocks": [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*HIGH Vulnerability Found*"
+                "text": "*Vulnerability Detected During CI/CD Scan*"
             }
-        },
-        {
-            "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Package:*\nbody-parser"
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": "*Severity:*\nHIGH"
-                }
-            ]
         },
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*AI Recommendation:*\nUpgrade to 1.20.3"
+                "text": "AI remediation workflow triggered successfully."
             }
-        },
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Approve"
-                    },
-                    "style": "primary",
-                    "value": "approve_fix"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Reject"
-                    },
-                    "style": "danger",
-                    "value": "reject_fix"
-                }
-            ]
         }
     ]
 }
@@ -68,4 +30,5 @@ response = requests.post(
     headers={"Content-Type": "application/json"}
 )
 
-print("Slack alert sent:", response.status_code)
+print("Slack Status:", response.status_code)
+print("Slack Response:", response.text)
